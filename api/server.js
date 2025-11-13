@@ -20,18 +20,24 @@ app.get('/', (req, res) => {
 })
 
 app.get('/weeks', async (req, res) => {
-    const weeks = await prisma.week.findMany({
-        include: {
-            cards: {
+    try {
+        const weeks = await prisma.week.findMany({
+            include: {
                 include: {
-                    disciplines: true 
+                    cards: {
+                        include: {
+                            disciplinas: true
+                        }
+                    }
                 }
             }
-        }
-    })
-    res.json(weeks)
+        })
+        res.json(weeks)
+    } catch (error) {
+        console.error('Erro ao buscar semanas:', error)
+        res.status(500).json({ error: 'Erro ao buscar semanas' })
+    }
 })
-
 
 app.post('/weeks', async (req, res) => {
     try {
