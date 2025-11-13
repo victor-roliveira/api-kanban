@@ -50,7 +50,7 @@ app.post('/weeks', async (req, res) => {
 ======================= */
 app.get('/cards', async (req, res) => {
   try {
-    const cards = await prisma.card.findMany({ include: { disciplines: true, week: true } })
+    const cards = await prisma.card.findMany({ include: { disciplinas: true, week: true } })
     res.json(cards)
   } catch (error) {
     console.error('Erro ao buscar cartões:', error)
