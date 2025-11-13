@@ -8,12 +8,17 @@ const prisma = new PrismaClient()
 app.use(cors())
 app.use(express.json())
 
+// Rota base para testar se a API está online
+app.get('/', (req, res) => {
+  res.send('🚀 API Kanban está online!')
+})
+
 // rotas das semanas
 app.get('/weeks', async (req, res) => {
     const weeks = await prisma.week.findMany({ include: { cards: true } })
     res.json(weeks)
 })
-app.post('weeks', async (req, res) => {
+app.post('/weeks', async (req, res) => {
     const { name, dateRange } = req.body
     const newWeek = await prisma.week.create({ data: { name, dateRange } })
     res.json(newWeek)
@@ -53,5 +58,5 @@ app.delete('/disciplines/:id', async (req, res) => {
     res.json({ message: 'Disciplina removida' })
 })
 
-const PORT = process.env.PORT || 3001
-app, listen(PORT, () => console.log(`API RODANDO NA PORTA ${PORT}`))
+// Exporta o app (importante para a Vercel)
+export default app
