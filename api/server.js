@@ -4,68 +4,125 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis
 const prisma = globalForPrisma.prisma || new PrismaClient()
-
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 const app = express()
-
 app.use(cors())
 app.use(express.json())
 
-// Rota base para testar se a API está online
-app.get('/', (req, res) => {
-    res.send('🚀 API Kanban está online!')
+// 🔍 Log de rotas (para debug e verificação na Vercel)
+app.use((req, res, next) => {
+  console.log('🛰️ Rota chamada:', req.method, req.url)
+  next()
 })
 
-// rotas das semanas
-app.get('/api/weeks', async (req, res) => {
+// Rota base (teste rápido da API)
+app.get('/', (req, res) => {
+  res.send('🚀 API Kanban está online!')
+})
+
+/* =======================
+   ROTAS DE SEMANAS
+======================= */
+app.get('/weeks', async (req, res) => {
+  try {
     const weeks = await prisma.week.findMany({ include: { cards: true } })
     res.json(weeks)
+  } catch (error) {
+    console.error('Erro ao buscar semanas:', error)
+    res.status(500).json({ error: 'Erro ao buscar semanas' })
+  }
 })
-app.post('/api/weeks', async (req, res) => {
+
+app.post('/weeks', async (req, res) => {
+  try {
     const { name, dateRange } = req.body
     const newWeek = await prisma.week.create({ data: { name, dateRange } })
     res.json(newWeek)
+  } catch (error) {
+    console.error('Erro ao criar semana:', error)
+    res.status(500).json({ error: 'Erro ao criar semana' })
+  }
 })
 
-// rotas dos cartões
-app.get('/api/cards', async (req, res) => {
+/* =======================
+   ROTAS DE CARTÕES
+======================= */
+app.get('/cards', async (req, res) => {
+  try {
     const cards = await prisma.card.findMany({ include: { disciplines: true, week: true } })
     res.json(cards)
+  } catch (error) {
+    console.error('Erro ao buscar cartões:', error)
+    res.status(500).json({ error: 'Erro ao buscar cartões' })
+  }
 })
-app.post('/api/cards', async (req, res) => {
+
+app.post('/cards', async (req, res) => {
+  try {
     const { title, orderService, weekId } = req.body
     const newCard = await prisma.card.create({ data: { title, orderService, weekId } })
     res.json(newCard)
+  } catch (error) {
+    console.error('Erro ao criar cartão:', error)
+    res.status(500).json({ error: 'Erro ao criar cartão' })
+  }
 })
-app.put('/api/cards/:id', async (req, res) => {
+
+app.put('/cards/:id', async (req, res) => {
+  try {
     const { id } = req.params
     const data = req.body
     const updated = await prisma.card.update({
-        where: { id: Number(id) },
-        data
+      where: { id: Number(id) },
+      data
     })
     res.json(updated)
+  } catch (error) {
+    console.error('Erro ao atualizar cartão:', error)
+    res.status(500).json({ error: 'Erro ao atualizar cartão' })
+  }
 })
 
-app.delete('/api/cards/:id', async (req, res) => {
+app.delete('/cards/:id', async (req, res) => {
+  try {
     const { id } = req.params
     await prisma.card.delete({ where: { id: Number(id) } })
     res.json({ message: 'Cartão removido!' })
+  } catch (error) {
+    console.error('Erro ao deletar cartão:', error)
+    res.status(500).json({ error: 'Erro ao deletar cartão' })
+  }
 })
 
-// rotas das disciplinas
-app.post('/api/disciplines', async (req, res) => {
+/* =======================
+   ROTAS DE DISCIPLINAS
+======================= */
+app.post('/disciplines', async (req, res) => {
+  try {
     const { name, color, icon, cardId } = req.body
     const newDiscipline = await prisma.discipline.create({ data: { name, color, icon, cardId } })
     res.json(newDiscipline)
+  } catch (error) {
+    console.error('Erro ao criar disciplina:', error)
+    res.status(500).json({ error: 'Erro ao criar disciplina' })
+  }
 })
-app.delete('/api/disciplines/:id', async (req, res) => {
+
+app.delete('/disciplines/:id', async (req, res) => {
+  try {
     const { id } = req.params
     await prisma.discipline.delete({ where: { id: Number(id) } })
     res.json({ message: 'Disciplina removida' })
+  } catch (error) {
+    console.error('Erro ao deletar disciplina:', error)
+    res.status(500).json({ error: 'Erro ao deletar disciplina' })
+  }
 })
 
+/* =======================
+   EXPORTAÇÃO (Vercel)
+======================= */
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled promise rejection:', err)
 })
