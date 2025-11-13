@@ -23,11 +23,9 @@ app.get('/weeks', async (req, res) => {
     try {
         const weeks = await prisma.week.findMany({
             include: {
-                include: {
-                    cards: {
-                        include: {
-                            disciplinas: true
-                        }
+                cards: {
+                    include: {
+                        disciplinas: true
                     }
                 }
             }
