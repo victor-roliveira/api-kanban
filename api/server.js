@@ -2,15 +2,19 @@ import express from 'express'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
 
+const globalForPrisma = globalThis
+const prisma = globalForPrisma.prisma || new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
 const app = express()
-const prisma = new PrismaClient()
 
 app.use(cors())
 app.use(express.json())
 
 // Rota base para testar se a API está online
 app.get('/', (req, res) => {
-  res.send('🚀 API Kanban está online!')
+    res.send('🚀 API Kanban está online!')
 })
 
 // rotas das semanas
@@ -37,9 +41,13 @@ app.post('/cards', async (req, res) => {
 app.put('/cards/:id', async (req, res) => {
     const { id } = req.params
     const data = req.body
-    const updated = await prisma.card.update({ where: { id: Number(id), data } })
+    const updated = await prisma.card.update({
+        where: { id: Number(id) },
+        data
+    })
     res.json(updated)
 })
+
 app.delete('/cards/:id', async (req, res) => {
     const { id } = req.params
     await prisma.card.delete({ where: { id: Number(id) } })
@@ -58,5 +66,8 @@ app.delete('/disciplines/:id', async (req, res) => {
     res.json({ message: 'Disciplina removida' })
 })
 
-// Exporta o app (importante para a Vercel)
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled promise rejection:', err)
+})
+
 export default app

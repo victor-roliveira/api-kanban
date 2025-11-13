@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -15,26 +15,26 @@ datasource db {
 }
 
 model Week {
-  id Int @id @default(autoincrement())
-  name String
+  id        Int    @id @default(autoincrement())
+  name      String
   dateRange String
-  cards Card[]
+  cards     Card[]
 }
 
 model Card {
-  id Int @id @default(autoincrement())
-  title String 
+  id           Int          @id @default(autoincrement())
+  title        String
   orderService String
-  weekId Int 
-  week Week @relation(fields: [weekId], references: [id])
-  disciplinas Discipline[]
+  weekId       Int
+  week         Week         @relation(fields: [weekId], references: [id])
+  disciplinas  Discipline[]
 }
 
 model Discipline {
-  id Int @id @default(autoincrement())
-  name String 
-  color String
-  icon String 
-  cardId Int 
-  card Card @relation(fields: [cardId], references: [id])
+  id     Int    @id @default(autoincrement())
+  name   String
+  color  String
+  icon   String
+  cardId Int
+  card   Card   @relation(fields: [cardId], references: [id])
 }
