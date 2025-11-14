@@ -36,5 +36,5 @@ model Discipline {
   color  String
   icon   String
   cardId Int
-  card   Card   @relation(fields: [cardId], references: [id])
+  card   Card?   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
