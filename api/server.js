@@ -48,6 +48,17 @@ app.post('/weeks', async (req, res) => {
     }
 })
 
+app.delete('/weeks/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        await prisma.week.delete({ where: { id: Number(id) } })
+        res.json({ message: 'Semana Removida!' })
+    } catch (error) {
+        console.error("erro ao deletar semana.", error)
+        res.status(500).json({ error: 'Erro ao deletar semana' })
+    }
+})
+
 app.get('/cards', async (req, res) => {
     try {
         const cards = await prisma.card.findMany({ include: { disciplinas: true, week: true } })
