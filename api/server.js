@@ -95,6 +95,23 @@ app.put('/cards/:id', async (req, res) => {
     }
 })
 
+app.patch('/cards/:id', async (req, res) => {
+  const { id } = req.params
+
+  try {
+    const updatedCard = await prisma.card.update({
+      where: { id: Number(id) },
+      data: req.body
+    })
+
+    res.json(updatedCard)
+  } catch (error) {
+    console.error('Erro ao atualizar parcialmente o card:', error)
+    res.status(500).json({ error: 'Erro ao atualizar parcialmente o cartão' })
+  }
+})
+
+
 app.delete('/cards/:id', async (req, res) => {
     try {
         const { id } = req.params
