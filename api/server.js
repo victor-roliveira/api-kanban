@@ -122,7 +122,11 @@ app.patch('/cards/:id', async (req, res) => {
     try {
         const updated = await prisma.card.update({
             where: { id: Number(id) },
-            data
+            data,
+            include: {
+                disciplinas: true,
+                week: true
+            }
         })
 
         res.json(updated)
