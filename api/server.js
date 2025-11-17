@@ -71,8 +71,8 @@ app.get('/cards', async (req, res) => {
 
 app.post('/cards', async (req, res) => {
     try {
-        const { title, orderService, weekId } = req.body
-        const newCard = await prisma.card.create({ data: { title, orderService, weekId } })
+        const { title, orderService, weekId, accountable, startDate, endDate, technicalApproval, complianceApproval } = req.body
+        const newCard = await prisma.card.create({ data: { title, orderService, weekId, accountable, startDate: new Date(startDate), endDate: new Date(endDate), technicalApproval: technicalApproval ?? false, complianceApproval: complianceApproval ?? false } })
         res.json(newCard)
     } catch (error) {
         console.error('Erro ao criar cartão:', error)
@@ -83,7 +83,7 @@ app.post('/cards', async (req, res) => {
 app.put('/cards/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const data = req.body
+        const data = { ...req.body, startDate: req.body.startDate ? new Date(req.body.startDate) : undefined, endDate: req.body.endDate ? new Date(req.body.endDate) : undefined }
         const updated = await prisma.card.update({
             where: { id: Number(id) },
             data
@@ -96,21 +96,24 @@ app.put('/cards/:id', async (req, res) => {
 })
 
 app.patch('/cards/:id', async (req, res) => {
-  const { id } = req.params
+    const { id } = req.params
+    const data = { ...req.body }
 
-  try {
-    const updatedCard = await prisma.card.update({
-      where: { id: Number(id) },
-      data: req.body
-    })
+    if (data.dataInicial) data.dataInicial = new Date(data.dataInicial)
+    if (data.dataFinal) data.dataFinal = new Date(data.dataFinal)
 
-    res.json(updatedCard)
-  } catch (error) {
-    console.error('Erro ao atualizar parcialmente o card:', error)
-    res.status(500).json({ error: 'Erro ao atualizar parcialmente o cartão' })
-  }
+    try {
+        const updatedCard = await prisma.card.update({
+            where: { id: Number(id) },
+            data
+        })
+
+        res.json(updatedCard)
+    } catch (error) {
+        console.error('Erro ao atualizar parcialmente o card:', error)
+        res.status(500).json({ error: 'Erro ao atualizar parcialmente o cartão' })
+    }
 })
-
 
 app.delete('/cards/:id', async (req, res) => {
     try {

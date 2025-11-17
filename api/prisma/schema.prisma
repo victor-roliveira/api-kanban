@@ -22,12 +22,17 @@ model Week {
 }
 
 model Card {
-  id           Int          @id @default(autoincrement())
-  title        String
-  orderService String
-  weekId       Int
-  week         Week         @relation(fields: [weekId], references: [id], onDelete: Cascade)
-  disciplinas  Discipline[]
+  id                 Int          @id @default(autoincrement())
+  title              String
+  orderService       String
+  accountable        String?
+  startDate          DateTime?
+  endDate            DateTime?
+  technicalApproval  Boolean?      @default(false)
+  complianceApproval Boolean?      @default(false)
+  weekId             Int
+  week               Week         @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  disciplinas        Discipline[]
 }
 
 model Discipline {
@@ -36,5 +41,5 @@ model Discipline {
   color  String
   icon   String
   cardId Int
-  card   Card?   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  card   Card?  @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
