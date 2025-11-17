@@ -97,23 +97,41 @@ app.put('/cards/:id', async (req, res) => {
 
 app.patch('/cards/:id', async (req, res) => {
     const { id } = req.params
-    const data = { ...req.body }
+    const data = {}
 
-    if (data.startDate) data.startDate = new Date(data.startDate)
-    if (data.endDate) data.endDate = new Date(data.endDate)
+    if ('startDate' in req.body) {
+        data.startDate = req.body.startDate ? new Date(req.body.startDate) : null
+    }
+
+    if ('endDate' in req.body) {
+        data.endDate = req.body.endDate ? new Date(req.body.endDate) : null
+    }
+
+    if ('technicalApproval' in req.body) {
+        data.technicalApproval = Boolean(req.body.technicalApproval)
+    }
+
+    if ('complianceApproval' in req.body) {
+        data.complianceApproval = Boolean(req.body.complianceApproval)
+    }
+
+    if ('accountable' in req.body) {
+        data.accountable = req.body.accountable
+    }
 
     try {
-        const updatedCard = await prisma.card.update({
+        const updated = await prisma.card.update({
             where: { id: Number(id) },
             data
         })
 
-        res.json(updatedCard)
+        res.json(updated)
     } catch (error) {
         console.error('Erro ao atualizar parcialmente o card:', error)
         res.status(500).json({ error: 'Erro ao atualizar parcialmente o cartão' })
     }
 })
+
 
 app.delete('/cards/:id', async (req, res) => {
     try {
