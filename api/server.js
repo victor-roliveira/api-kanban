@@ -84,11 +84,16 @@ app.put('/cards/:id', async (req, res) => {
     try {
         const { id } = req.params
         const data = { ...req.body, startDate: req.body.startDate ? new Date(req.body.startDate) : undefined, endDate: req.body.endDate ? new Date(req.body.endDate) : undefined }
-        const updated = await prisma.card.update({
+        const updatedCard = await prisma.card.update({
             where: { id: Number(id) },
-            data
+            data,
+            include: {
+                disciplinas: true,
+                week: true
+            }
         })
-        res.json(updated)
+        res.json(updatedCard)
+
     } catch (error) {
         console.error('Erro ao atualizar cartão:', error)
         res.status(500).json({ error: 'Erro ao atualizar cartão' })
