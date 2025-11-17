@@ -99,8 +99,8 @@ app.patch('/cards/:id', async (req, res) => {
     const { id } = req.params
     const data = { ...req.body }
 
-    if (data.dataInicial) data.dataInicial = new Date(data.dataInicial)
-    if (data.dataFinal) data.dataFinal = new Date(data.dataFinal)
+    if (data.startDate) data.startDate = new Date(data.startDate)
+    if (data.endDate) data.endDate = new Date(data.endDate)
 
     try {
         const updatedCard = await prisma.card.update({
