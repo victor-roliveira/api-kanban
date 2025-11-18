@@ -175,8 +175,8 @@ app.delete('/disciplines/:id', async (req, res) => {
     }
 })
 
-app.get('/boards/:disciplineId', async (req, res) => {
-    const { disciplineId } = req.params
+app.get('/boards/:disciplineName', async (req, res) => {
+    const { disciplineName } = req.params
 
     try {
         const weeks = await prisma.week.findMany({
@@ -184,20 +184,18 @@ app.get('/boards/:disciplineId', async (req, res) => {
                 cards: {
                     where: {
                         disciplinas: {
-                            some: { id: Number(disciplineId) }
+                            some: { name: disciplineName }
                         }
                     },
-                    include: {
-                        disciplinas: true
-                    }
+                    include: { disciplinas: true }
                 }
             }
         })
 
         res.json(weeks)
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Erro ao buscar quadro por disciplina.")
+    } catch (err) {
+        console.error(err)
+        res.status(500).send("Erro ao filtrar cards por disciplina")
     }
 })
 
