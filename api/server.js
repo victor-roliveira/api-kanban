@@ -175,6 +175,32 @@ app.delete('/disciplines/:id', async (req, res) => {
     }
 })
 
+app.get('/boards/:disciplineId', async (req, res) => {
+    const { disciplineId } = req.params
+
+    try {
+        const weeks = await prisma.week.findMany({
+            include: {
+                cards: {
+                    where: {
+                        disciplinas: {
+                            some: { id: Number(disciplineId) }
+                        }
+                    },
+                    include: {
+                        disciplinas: true
+                    }
+                }
+            }
+        })
+
+        res.json(weeks)
+    } catch (error) {
+        console.error(error)
+        res.status(500).send("Erro ao buscar quadro por disciplina.")
+    }
+})
+
 process.on('unhandledRejection', (err) => {
     console.error('❌ Unhandled promise rejection:', err)
 })
