@@ -2,205 +2,136 @@ import express from 'express'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
 
-const globalForPrisma = globalThis
-const prisma = globalForPrisma.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
+const prisma = new PrismaClient()
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.use((req, res, next) => {
-    console.log('🛰️ Rota chamada:', req.method, req.url)
-    next()
-})
-
 app.get('/', (req, res) => {
-    res.send('🚀 API Kanban está online!')
+    res.send('🚀 API Cronograma de Engenharia online!')
 })
 
-app.get('/weeks', async (req, res) => {
+// 📌 LISTAR ORDENS (GERAL ou por disciplina)
+app.get('/ordens', async (req, res) => {
+    const disciplina = req.query.disciplina
+
     try {
-        const weeks = await prisma.week.findMany({
-            include: {
-                cards: {
-                    include: {
-                        disciplinas: true
+        const ordens = await prisma.ordemServico.findMany({
+            where: disciplina && disciplina !== "Geral"
+                ? {
+                    disciplinas: {
+                        some: { nome: disciplina }
                     }
                 }
-            }
+                : {},
+            include: { disciplinas: true }
         })
-        res.json(weeks)
+
+        res.json(ordens)
     } catch (error) {
-        console.error('Erro ao buscar semanas:', error)
-        res.status(500).json({ error: 'Erro ao buscar semanas' })
+        console.error("Erro ao buscar ordens:", error)
+        res.status(500).json({ error: "Erro ao buscar ordens" })
     }
 })
 
-app.post('/weeks', async (req, res) => {
+// 📌 CRIAR ORDEM DE SERVIÇO
+app.post('/ordens', async (req, res) => {
     try {
-        const { name, dateRange } = req.body
-        const newWeek = await prisma.week.create({ data: { name, dateRange } })
-        res.json(newWeek)
+        const { nome, responsavel, dataInicio, dataFim, disciplinas } = req.body
+
+        const novaOrdem = await prisma.ordemServico.create({
+            data: {
+                nome,
+                responsavel,
+                dataInicio: new Date(dataInicio),
+                dataFim: new Date(dataFim),
+                disciplinas: {
+                    connect: disciplinas.map(id => ({ id }))
+                }
+            },
+            include: { disciplinas: true }
+        })
+
+        res.json(novaOrdem)
     } catch (error) {
-        console.error('Erro ao criar semana:', error)
-        res.status(500).json({ error: 'Erro ao criar semana' })
+        console.error("Erro ao criar ordem:", error)
+        res.status(500).json({ error: "Erro ao criar ordem" })
     }
 })
 
-app.delete('/weeks/:id', async (req, res) => {
+// 📌 EDITAR ORDEM DE SERVIÇO COMPLETA
+app.put('/ordens/:id', async (req, res) => {
     try {
         const { id } = req.params
-        await prisma.week.delete({ where: { id: Number(id) } })
-        res.json({ message: 'Semana Removida!' })
-    } catch (error) {
-        console.error("erro ao deletar semana.", error)
-        res.status(500).json({ error: 'Erro ao deletar semana' })
-    }
-})
+        const { nome, responsavel, dataInicio, dataFim, disciplinas } = req.body
 
-app.get('/cards', async (req, res) => {
-    try {
-        const cards = await prisma.card.findMany({ include: { disciplinas: true, week: true } })
-        res.json(cards)
-    } catch (error) {
-        console.error('Erro ao buscar cartões:', error)
-        res.status(500).json({ error: 'Erro ao buscar cartões' })
-    }
-})
-
-app.post('/cards', async (req, res) => {
-    try {
-        const { title, orderService, weekId, accountable, startDate, endDate, technicalApproval, complianceApproval } = req.body
-        const newCard = await prisma.card.create({ data: { title, orderService, weekId, accountable, startDate: new Date(startDate), endDate: new Date(endDate), technicalApproval: technicalApproval ?? false, complianceApproval: complianceApproval ?? false } })
-        res.json(newCard)
-    } catch (error) {
-        console.error('Erro ao criar cartão:', error)
-        res.status(500).json({ error: 'Erro ao criar cartão' })
-    }
-})
-
-app.put('/cards/:id', async (req, res) => {
-    try {
-        const { id } = req.params
-        const data = { ...req.body, startDate: req.body.startDate ? new Date(req.body.startDate) : undefined, endDate: req.body.endDate ? new Date(req.body.endDate) : undefined }
-        const updatedCard = await prisma.card.update({
+        const updated = await prisma.ordemServico.update({
             where: { id: Number(id) },
-            data,
-            include: {
-                disciplinas: true,
-                week: true
-            }
-        })
-        res.json(updatedCard)
-
-    } catch (error) {
-        console.error('Erro ao atualizar cartão:', error)
-        res.status(500).json({ error: 'Erro ao atualizar cartão' })
-    }
-})
-
-app.patch('/cards/:id', async (req, res) => {
-    const { id } = req.params
-    const data = {}
-
-    if ('startDate' in req.body) {
-        data.startDate = req.body.startDate ? new Date(req.body.startDate) : null
-    }
-
-    if ('endDate' in req.body) {
-        data.endDate = req.body.endDate ? new Date(req.body.endDate) : null
-    }
-
-    if ('technicalApproval' in req.body) {
-        data.technicalApproval = Boolean(req.body.technicalApproval)
-    }
-
-    if ('complianceApproval' in req.body) {
-        data.complianceApproval = Boolean(req.body.complianceApproval)
-    }
-
-    if ('accountable' in req.body) {
-        data.accountable = req.body.accountable
-    }
-
-    try {
-        const updated = await prisma.card.update({
-            where: { id: Number(id) },
-            data,
-            include: {
-                disciplinas: true,
-                week: true
-            }
+            data: {
+                nome,
+                responsavel,
+                dataInicio: new Date(dataInicio),
+                dataFim: new Date(dataFim),
+                disciplinas: {
+                    set: [],
+                    connect: disciplinas.map(id => ({ id }))
+                }
+            },
+            include: { disciplinas: true }
         })
 
         res.json(updated)
     } catch (error) {
-        console.error('Erro ao atualizar parcialmente o card:', error)
-        res.status(500).json({ error: 'Erro ao atualizar parcialmente o cartão' })
+        console.error("Erro ao atualizar ordem:", error)
+        res.status(500).json({ error: "Erro ao atualizar ordem" })
     }
 })
 
-
-app.delete('/cards/:id', async (req, res) => {
+// 📌 ATUALIZAÇÃO PARCIAL (OPCIONAL)
+app.patch('/ordens/:id', async (req, res) => {
     try {
         const { id } = req.params
-        await prisma.card.delete({ where: { id: Number(id) } })
-        res.json({ message: 'Cartão removido!' })
-    } catch (error) {
-        console.error('Erro ao deletar cartão:', error)
-        res.status(500).json({ error: 'Erro ao deletar cartão' })
-    }
-})
+        const data = {}
 
-app.post('/disciplines', async (req, res) => {
-    try {
-        const { name, color, icon, cardId } = req.body
-        const newDiscipline = await prisma.discipline.create({ data: { name, color, icon, cardId } })
-        res.json(newDiscipline)
-    } catch (error) {
-        console.error('Erro ao criar disciplina:', error)
-        res.status(500).json({ error: 'Erro ao criar disciplina' })
-    }
-})
+        if (req.body.dataInicio) data.dataInicio = new Date(req.body.dataInicio)
+        if (req.body.dataFim) data.dataFim = new Date(req.body.dataFim)
+        if (req.body.responsavel) data.responsavel = req.body.responsavel
 
-app.delete('/disciplines/:id', async (req, res) => {
-    try {
-        const { id } = req.params
-        await prisma.discipline.delete({ where: { id: Number(id) } })
-        res.json({ message: 'Disciplina removida' })
-    } catch (error) {
-        console.error('Erro ao deletar disciplina:', error)
-        res.status(500).json({ error: 'Erro ao deletar disciplina' })
-    }
-})
-
-app.get('/boards/:disciplineName', async (req, res) => {
-    const { disciplineName } = req.params
-
-    try {
-        const weeks = await prisma.week.findMany({
-            include: {
-                cards: {
-                    where: {
-                        disciplinas: {
-                            some: { name: disciplineName }
-                        }
-                    },
-                    include: { disciplinas: true }
-                }
-            }
+        const updated = await prisma.ordemServico.update({
+            where: { id: Number(id) },
+            data,
+            include: { disciplinas: true }
         })
 
-        res.json(weeks)
-    } catch (err) {
-        console.error(err)
-        res.status(500).send("Erro ao filtrar cards por disciplina")
+        res.json(updated)
+    } catch (error) {
+        console.error("Erro ao atualizar parcialmente:", error)
+        res.status(500).json({ error: "Erro ao atualizar parcialmente" })
     }
 })
 
-process.on('unhandledRejection', (err) => {
-    console.error('❌ Unhandled promise rejection:', err)
+// 📌 DELETAR OS
+app.delete('/ordens/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        await prisma.ordemServico.delete({ where: { id: Number(id) } })
+        res.json({ message: "Ordem removida!" })
+    } catch (error) {
+        console.error("Erro ao deletar ordem:", error)
+        res.status(500).json({ error: "Erro ao deletar ordem" })
+    }
 })
+
+// 📌 DISCIPLINAS
+app.get('/disciplinas', async (req, res) => {
+    try {
+        const disciplinas = await prisma.disciplina.findMany()
+        res.json(disciplinas)
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao listar disciplinas" })
+    }
+})
+
+process.on('unhandledRejection', (err) => console.error('Erro não tratado:', err))
 
 export default app
