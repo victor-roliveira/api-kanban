@@ -11,6 +11,18 @@ app.get('/', (req, res) => {
     res.send('🚀 API Cronograma de Engenharia online!')
 })
 
+// Ícones padrão por disciplina
+const iconMap = {
+    "Estrutura": "mdi-office-building-outline",
+    "Orçamento": "mdi-cash-check",
+    "Hidrossanitário": "mdi-water-pump",
+    "Elétrica": "mdi-flash",
+    "PCI": "mdi-fire",
+};
+
+const getDefaultIcon = (name) => iconMap[name] || "mdi-tag";
+
+
 // 📌 LISTAR ORDENS (GERAL ou por disciplina)
 app.get('/ordens', async (req, res) => {
     const disciplina = req.query.disciplina
@@ -141,7 +153,7 @@ app.post('/disciplinas', async (req, res) => {
         const { nome, cor, icone } = req.body;
 
         const disciplina = await prisma.disciplina.create({
-            data: { nome, cor, icone }
+            data: { nome, cor, icone: icone || getDefaultIcon(nome) }
         });
 
         res.json(disciplina);
