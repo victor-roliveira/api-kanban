@@ -132,6 +132,21 @@ app.get('/disciplinas', async (req, res) => {
     }
 })
 
+app.post('/disciplinas', async (req, res) => {
+    try {
+        const { nome, cor, icone } = req.body;
+
+        const disciplina = await prisma.disciplina.create({
+            data: { nome, cor, icone }
+        });
+
+        res.json(disciplina);
+    } catch (error) {
+        console.error("Erro ao criar disciplina:", error);
+        res.status(500).json({ error: "Erro ao criar disciplina" });
+    }
+});
+
 process.on('unhandledRejection', (err) => console.error('Erro não tratado:', err))
 
 export default app
