@@ -18,6 +18,7 @@ const iconMap = {
     "Hidrossanitário": "mdi-water-pump",
     "Elétrica": "mdi-flash",
     "PCI": "mdi-fire",
+    "Terraplanagem": "mdi-image-filter-hdr"
 };
 
 const getDefaultIcon = (name) => iconMap[name] || "mdi-tag";
