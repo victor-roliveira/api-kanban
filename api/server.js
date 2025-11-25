@@ -46,7 +46,9 @@ app.post('/ordens', async (req, res) => {
                 dataInicio: new Date(dataInicio),
                 dataFim: new Date(dataFim),
                 disciplinas: {
-                    connect: disciplinas.map(id => ({ id }))
+                    connect: (req.body.disciplinas || []).map(d =>
+                        typeof d === "number" ? { id: d } : { id: d.id }
+                    )
                 }
             },
             include: { disciplinas: true }
@@ -74,7 +76,9 @@ app.put('/ordens/:id', async (req, res) => {
                 dataFim: new Date(dataFim),
                 disciplinas: {
                     set: [],
-                    connect: disciplinas.map(id => ({ id }))
+                    connect: (req.body.disciplinas || []).map(d =>
+                        typeof d === "number" ? { id: d } : { id: d.id }
+                    )
                 }
             },
             include: { disciplinas: true }
