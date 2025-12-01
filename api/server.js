@@ -11,7 +11,6 @@ app.get('/', (req, res) => {
     res.send('🚀 API Cronograma de Engenharia online!')
 })
 
-// Ícones padrão por disciplina
 const iconMap = {
     "Estrutura": "mdi-office-building-outline",
     "Orçamento": "mdi-cash-check",

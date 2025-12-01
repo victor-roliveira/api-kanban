@@ -18,7 +18,7 @@ datasource db {
 model OrdemServico {
   id          Int          @id @default(autoincrement())
   nome        String
-  responsavel String
+  responsavel String?
   dataInicio  DateTime
   dataFim     DateTime
   disciplinas Disciplina[] @relation("OSDisciplinas")
