@@ -14,7 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model OrdemServico {
   id          Int          @id @default(autoincrement())
   nome        String
@@ -27,9 +26,17 @@ model OrdemServico {
 }
 
 model Disciplina {
-  id      Int              @id @default(autoincrement())
-  nome    String
-  cor     String?
-  icone   String?
-  ordens  OrdemServico[]   @relation("OSDisciplinas")
+  id     Int            @id @default(autoincrement())
+  nome   String
+  cor    String?
+  icone  String?
+  ordens OrdemServico[] @relation("OSDisciplinas")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
 }

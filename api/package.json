@@ -8,7 +8,8 @@
     "vercel-build": "node vercel-build.js",
     "dev": "npx prisma generate && node server.js",
     "start": "node server.js",
-    "build": "npx prisma generate"
+    "build": "npx prisma generate",
+    "db:seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +19,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0"
