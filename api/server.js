@@ -169,6 +169,6 @@ app.post('/disciplinas', async (req, res) => {
 
 process.on('unhandledRejection', (err) => console.error('Erro não tratado:', err))
 
-export default function handler(req, res) {
+export default (req, res) => {
   return app(req, res);
-}
+};
