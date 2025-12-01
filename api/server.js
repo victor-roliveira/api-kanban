@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
 
-const authRoutes = require('./routes/auth')
+import authRoutes from "./routes/auth.js";
 
 const prisma = new PrismaClient()
 const app = express()
