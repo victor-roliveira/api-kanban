@@ -1,10 +1,10 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
+const router = Router();
 const prisma = new PrismaClient();
-const router = express.Router();
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
@@ -12,9 +12,8 @@ router.post("/login", async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) return res.status(401).json({ message: "Usuário não encontrado" });
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch)
-    return res.status(401).json({ message: "Senha incorreta" });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ message: "Senha inválida" });
 
   const token = jwt.sign(
     { userId: user.id, role: user.role },
@@ -22,14 +21,7 @@ router.post("/login", async (req, res) => {
     { expiresIn: "2h" }
   );
 
-  res.json({
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    },
-  });
+  res.json({ token, user });
 });
 
-module.exports = router;
+export default router;
