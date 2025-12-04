@@ -40,3 +40,9 @@ model User {
   role      String   @default("user")
   createdAt DateTime @default(now())
 }
+
+model PeriodoCronograma {
+  id     Int      @id @default(1)
+  inicio DateTime
+  fim    DateTime
+}

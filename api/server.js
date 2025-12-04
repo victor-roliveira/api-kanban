@@ -167,8 +167,60 @@ app.post('/disciplinas', async (req, res) => {
     }
 });
 
+app.get("/periodo", async (req, res) => {
+    try {
+        let periodo = await prisma.periodoCronograma.findUnique({
+            where: { id: 1 }
+        });
+
+        // Se não existir, cria um período padrão
+        if (!periodo) {
+            periodo = await prisma.periodoCronograma.create({
+                data: {
+                    id: 1,
+                    inicio: new Date("2025-01-01"),
+                    fim: new Date("2025-12-31")
+                }
+            });
+        }
+
+        res.json(periodo);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao buscar período" });
+    }
+});
+
+app.put("/periodo", async (req, res) => {
+    const { inicio, fim } = req.body;
+
+    if (!inicio || !fim) {
+        return res.status(400).json({ error: "Campos obrigatórios: inicio, fim" });
+    }
+
+    try {
+        const periodo = await prisma.periodoCronograma.upsert({
+            where: { id: 1 },
+            update: {
+                inicio: new Date(inicio),
+                fim: new Date(fim)
+            },
+            create: {
+                id: 1,
+                inicio: new Date(inicio),
+                fim: new Date(fim)
+            }
+        });
+
+        res.json(periodo);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Erro ao atualizar período" });
+    }
+});
+
 process.on('unhandledRejection', (err) => console.error('Erro não tratado:', err))
 
 export default (req, res) => {
-  return app(req, res);
+    return app(req, res);
 };
